@@ -2134,11 +2134,11 @@ namespace EPPlusTest
             }
         }
 
-        public string Hash(byte[] temp)
+        public string Hashtest(byte[] temp)
         {
-            using (SHA1Managed sha1 = new SHA1Managed())
+            using (SHA1Managed sha1Example = new SHA1Managed())
             {
-                var hash = sha1.ComputeHash(temp);
+                var hash = sha1Example.ComputeHash(temp);
                 return Convert.ToBase64String(hash);
             }
         }
@@ -2147,7 +2147,7 @@ namespace EPPlusTest
         public void SHA1Test()
         {
             var bytes = File.ReadAllBytes("C:\\epplusTest\\Workbooks\\sheet1.xml");
-            string hash = Hash(bytes);
+            string hash = Hashtest(bytes);
 
             Assert.AreEqual("5dK/Tn8G0h7N8XnQ6PO7YcqoOWY=", hash);
         }
