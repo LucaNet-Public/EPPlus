@@ -50,5 +50,9 @@ namespace OfficeOpenXml.Constants
         internal const string contentTypeRichDataValue = "application/vnd.ms-excel.rdrichvalue+xml";
         internal const string contentTypeRichDataValueStructure = "application/vnd.ms-excel.rdrichvaluestructure+xml";
         internal const string contentTypeRichDataValueType = "application/vnd.ms-excel.rdrichvaluetypes+xml";
+
+        //Digital Signature
+        internal const string signatureOrigin = "application/vnd.openxmlformats-package.digital-signature-origin";
+        internal const string xmlSignatures = "application/vnd.openxmlformats-package.digital-signature-xmlsignature+xml";
     }
 }

@@ -46,6 +46,7 @@ using System.Runtime.InteropServices;
 using OfficeOpenXml.Style;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Finance;
 using static System.Net.Mime.MediaTypeNames;
+using OfficeOpenXml.DigitalSignatures;
 
 namespace OfficeOpenXml
 {
@@ -836,10 +837,33 @@ namespace OfficeOpenXml
 				return _vba;
 			}
 		}
-		/// <summary>
-		/// Remove the from the file VBA project.
-		/// </summary>
-		public void RemoveVBAProject()
+
+		DigitalSignature _digSig = null;
+
+        internal DigitalSignature DigSignature
+		{
+            get
+            {
+                if (_digSig == null)
+                {
+					_digSig = new DigitalSignature(this);
+                    //if (_package.ZipPackage.PartExists(new Uri(ExcelVbaProject.PartUri, UriKind.Relative)))
+                    //{
+                    //    _vba = new ExcelVbaProject(this);
+                    //}
+                    //else if (Part.ContentType == ContentTypes.contentTypeWorkbookMacroEnabled) //Project is macro enabled, but no bin file exists.
+                    //{
+                    //    CreateVBAProject();
+                    //}
+                }
+                return _digSig;
+            }
+        }
+
+        /// <summary>
+        /// Remove the from the file VBA project.
+        /// </summary>
+        public void RemoveVBAProject()
 		{
 			if (_vba != null)
 			{
@@ -1294,9 +1318,14 @@ namespace OfficeOpenXml
 
 			sharedStringsPart.SaveHandler = SaveSharedStringHandler;
 
-			//// Data validation
+			// Data validation
 			ValidateDataValidations();
-            
+
+			if(_digSig != null)
+			{
+                DigSignature.Save();
+            }
+
             //VBA
             if (_vba != null)
 			{
