@@ -538,6 +538,11 @@
 		<PackageReference Include="System.Text.Encoding.CodePages" />
 	</ItemGroup>
 
+	<ItemGroup Condition="'$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net462' ">
+		<PackageReference Include="System.Security.Cryptography.Xml" />
+	</ItemGroup>
+
+
 	<ItemGroup>
 		<Compile Remove="LoadFunctions\HeaderReader.cs" />
 	</ItemGroup>

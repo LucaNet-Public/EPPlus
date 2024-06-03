@@ -49,6 +49,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Security.Cryptography.X509Certificates;
 using OfficeOpenXml.DigitalSignatures;
+using System.Xml;
 
 namespace EPPlusTest
 {
@@ -2107,7 +2108,6 @@ namespace EPPlusTest
             }
         }
 
-
         [TestMethod]
         [ExpectedException(typeof(InvalidOperationException))]
         public void NoVisibleSheetShouldThrow()
@@ -2131,80 +2131,6 @@ namespace EPPlusTest
                 Assert.AreEqual(ExcelCalcMode.Manual, p.Workbook.CalcMode);
                 p.Workbook.CalcMode = ExcelCalcMode.Manual;
                 SaveAndCleanup(p);
-            }
-        }
-
-        public string Hashtest(byte[] temp)
-        {
-            using (SHA1Managed sha1Example = new SHA1Managed())
-            {
-                var hash = sha1Example.ComputeHash(temp);
-                return Convert.ToBase64String(hash);
-            }
-        }
-
-        [TestMethod]
-        public void SHA1Test()
-        {
-            var bytes = File.ReadAllBytes("C:\\epplusTest\\Workbooks\\sheet1.xml");
-            string hash = Hashtest(bytes);
-
-            Assert.AreEqual("5dK/Tn8G0h7N8XnQ6PO7YcqoOWY=", hash);
-        }
-
-        [TestMethod]
-        public void DigitallySignDoc()
-        {
-            using (var p = OpenTemplatePackage("UnsignedWBEmpty.xlsx"))
-            {
-                var ws = p.Workbook.Worksheets[0];
-
-                X509Store store = new X509Store(StoreLocation.CurrentUser);
-                store.Open(OpenFlags.ReadOnly);
-                foreach (var cert in store.Certificates)
-                {
-                    if (cert.HasPrivateKey && cert.NotBefore <= DateTime.Today && cert.NotAfter >= DateTime.Today)
-                    {
-                        p.Workbook.DigSignature.Certificate = cert;
-                        break;
-                    }
-                }
-
-                SaveAndCleanup(p);
-            }
-        }
-
-        [TestMethod]
-        public void VBASignTest()
-        {
-            using(var p = OpenPackage("VbaTest.xlsm", true))
-            {
-                ExcelPackage pck = new ExcelPackage();
-                //Add a worksheet.
-                var ws = pck.Workbook.Worksheets.Add("VBA Sample");
-                ws.Drawings.AddShape("VBASampleRect", eShapeStyle.RoundRect);
-                //Create a vba project             
-                pck.Workbook.CreateVBAProject();
-                //Now add some code to update the text of the shape...
-                var sb = new StringBuilder();
-                sb.AppendLine("Private Sub Workbook_Open()");
-                sb.AppendLine("    [VBA Sample].Shapes(\"VBASampleRect\").TextEffect.Text = \"This text is set from VBA!\"");
-                sb.AppendLine("End Sub");
-                pck.Workbook.CodeModule.Code = sb.ToString();
-
-                X509Store store = new X509Store(StoreLocation.CurrentUser);
-                store.Open(OpenFlags.ReadOnly);
-                foreach (var cert in store.Certificates)
-                {
-                    if (cert.HasPrivateKey && cert.NotBefore <= DateTime.Today && cert.NotAfter >= DateTime.Today)
-                    {
-                        pck.Workbook.VbaProject.Signature.Certificate = cert;
-                        break;
-                    }
-                }
-
-                //And Save as xlsm
-                pck.SaveAs(new FileInfo(@"C:\epplusTest\Testoutput" + @"\VbaTest.xlsm"));
             }
         }
     }

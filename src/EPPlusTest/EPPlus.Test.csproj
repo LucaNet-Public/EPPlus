@@ -45,6 +45,10 @@
     <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
+	<ItemGroup Condition="'$(TargetFramework)' != 'net481'">
+		<PackageReference Include="System.Security.Cryptography.Xml" />
+	</ItemGroup>
+
   <ItemGroup>
     <Compile Remove="FormulaParsing\ExpressionGraph\EnumerableExpressionTests.cs" />
     <Compile Remove="FormulaParsing\ExpressionGraph\ExpressionCompilerTests.cs" />
