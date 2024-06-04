@@ -288,38 +288,34 @@ namespace EPPlusTest
             Assert.AreEqual("123 456 ABC", sheet.Cells["B9"].Value);
         }
 
+
         /*Ticket 146575*/
         [TestMethod,
          Description("If a Chart.xml contains ExtLst Nodes than the indentation of the chart.xml leads to corrupt Excel files")]
         public void IssueWhitespaceInChartXml()
         {
-            /* Note: The Microsoft.Office.Interop.Excel library is not compatible with all .Core frameworks. */
-
-            //Arrange
-#if ! Core
+            // Arrange
             var dir = AppDomain.CurrentDomain.BaseDirectory;
-            var excelPackage = new ExcelPackage(new FileInfo(Path.Combine(dir, "Workbooks", "TestDoc_WithCharts_xlsx.xlsx")));
+            var excelFilePath = Path.Combine(dir, "Workbooks", "TestDoc_WithCharts_xlsx.xlsx");
+            var excelPackage = new ExcelPackage(new FileInfo(excelFilePath));
 
-            //Act
+            // Act
             var savePath = Path.Combine(TestContext.TestDeploymentDir, $"{TestContext.TestName}.xlsx");
             excelPackage.SaveAs(new FileInfo(savePath));
 
-            var exApp = new Microsoft.Office.Interop.Excel.Application();
-
+            // Assert
             try
             {
-                var exWbk = exApp.Workbooks.Open(savePath);
+                using var loadedPackage = new ExcelPackage(new FileInfo(savePath));
+                Assert.IsNotNull(loadedPackage);
             }
-            catch (System.Runtime.InteropServices.COMException)
+            catch (Exception ex)
             {
-                Assert.Fail("It is not possible to open the workbook after EPPlus saved it.");
+                Assert.Fail($"It is not possible to open the workbook after EPPlus saved it. Exception: {ex.Message}");
             }
-            finally
-            {
-                exApp.Workbooks.Close();
-            }
-#endif
         }
+
+        public TestContext TestContext { get; set; }
 
 
         /*Ticket 146577 Text 1*/
@@ -410,35 +406,31 @@ namespace EPPlusTest
         }
 
 
+
         /*Ticket 146580*/
         [TestMethod,
          Description("If a cell contains a hyperlink with special characters such as ä,ö,ü Excel encodes the link not in UTF-8 to keep the rule that a target link must be shorter than 2080 characters")]
         public void Test_can_not_open_file_after_saving()
         {
-            //Arrange
-#if ! Core
-
+            // Arrange
             var dir = AppDomain.CurrentDomain.BaseDirectory;
+            var originalFilePath = Path.Combine(dir, "Workbooks", "TestDoc_CellWithHyperlink_xlsx.xlsx");
+            var excelPackage = new ExcelPackage(new FileInfo(originalFilePath));
 
-            var excelPackage = new ExcelPackage(new FileInfo(Path.Combine(dir, "Workbooks", "TestDoc_CellWithHyperlink_xlsx.xlsx")));
-
+            // Act
             var savePath = Path.Combine(TestContext.TestDeploymentDir, $"{TestContext.TestName}.xlsx");
             excelPackage.SaveAs(new FileInfo(savePath));
-            var exApp = new Microsoft.Office.Interop.Excel.Application();
 
+            // Assert
             try
             {
-                var exWbk = exApp.Workbooks.Open(savePath);
+                using var loadedPackage = new ExcelPackage(new FileInfo(savePath));
+                Assert.IsNotNull(loadedPackage, "Failed to open the workbook after EPPlus saved it.");
             }
-            catch (System.Runtime.InteropServices.COMException)
+            catch (Exception ex)
             {
-                Assert.Fail("It is not possible to open the workbook after EPPlus saved it.");
+                Assert.Fail($"It is not possible to open the workbook after EPPlus saved it. Exception: {ex.Message}");
             }
-            finally
-            {
-                exApp.Workbooks.Close();
-            }
-#endif
         }
 
 
