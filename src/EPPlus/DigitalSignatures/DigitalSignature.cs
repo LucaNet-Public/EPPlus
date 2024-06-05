@@ -218,6 +218,22 @@ namespace OfficeOpenXml.DigitalSignatures
 
         internal void Save()
         {
+            string parentElement = "<Signature xmlns=\"http://www.w3.org/2000/09/xmldsig#\" Id=\"idPackageSignature\">";
+            string endElement = "</Signature>";
+
+
+
+            var keyinfo = GetKeyInfo();
+            var xmlIdSignedProperties = GetQualifyingPropertiesXml();
+            var officeObject = GetOfficeObject();
+            var packageObject = GetPackageObject();
+
+            var joinedString = string.Concat(parentElement, keyinfo, packageObject, officeObject, xmlIdSignedProperties, endElement);
+
+
+            byte[] bytes = Encoding.UTF8.GetBytes(joinedString);
+
+            _part.GetStream(FileMode.Create).Write(bytes, 0, bytes.Length);
 
             CspParameters cspParams = new()
             {
@@ -230,6 +246,7 @@ namespace OfficeOpenXml.DigitalSignatures
             {
                 PreserveWhitespace = true,
             };
+            xmlDoc.LoadXml(_part.Uri.AbsolutePath);
 
             SignedXml signedXml = new(xmlDoc)
             {
@@ -241,19 +258,13 @@ namespace OfficeOpenXml.DigitalSignatures
                 Type = "http://www.w3.org/2000/09/xmldsig#Object",
                 Uri = "#idOfficeObject"
             };
-            //string parentElement = "<Signature xmlns=\"http://www.w3.org/2000/09/xmldsig#\" Id=\"idPackageSignature\">";
-            //string endElement = "</Signature>";'
 
-            var keyinfo = GetKeyInfo();
-            var xmlIdSignedProperties = GetQualifyingPropertiesXml();
-            var officeObject = GetOfficeObject();
-            var packageObject = GetPackageObject();
+            XmlDsigEnvelopedSignatureTransform env = new();
+            reference.AddTransform(env);
 
-            //var joinedString = string.Concat(parentElement, keyinfo, packageObject, officeObject, xmlIdSignedProperties, endElement);
+            signedXml.AddReference(reference);
 
-            //byte[] bytes = Encoding.UTF8.GetBytes(joinedString);
-
-           // _part.GetStream(FileMode.Create).Write(bytes, 0, bytes.Length);
+            signedXml.ComputeSignature();
         }
 
         internal void CreateSignature()
