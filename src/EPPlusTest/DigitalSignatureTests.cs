@@ -8,6 +8,8 @@ using OfficeOpenXml;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using OfficeOpenXml.Drawing;
+using OfficeOpenXml.Constants;
+using System.Security.Cryptography.Pkcs;
 
 //REMEMBER:
 //1. Cannonize
@@ -100,6 +102,78 @@ namespace EPPlusTest
             doc.Save("C:\\epplusTest\\Workbooks\\newVersion.xml");
         }
 
+        internal const string PartUri = @"/_xmlsignatures/sig1.xml";
+
+        [TestMethod]
+        public void SignSave()
+        {
+            using (var pck = OpenPackage("generatedSignedEmpty.xlsx", true))
+            {
+                RSACryptoServiceProvider rsaKey = new();
+
+                var wb = pck.Workbook;
+
+                wb.Worksheets.Add("emptyWorksheet");
+
+                //SignedCms signed = new SignedCms();
+                //CryptographicAttributeObject attribute = new CryptographicAttributeObject()
+                //signed.SignerInfos[0].signedpr
+
+                XmlDocument xmlDoc = new()
+                {
+                    PreserveWhitespace = true,
+                };
+
+                var part = wb._package.ZipPackage.CreatePart(new Uri(PartUri, UriKind.Relative), ContentTypes.xmlSignatures);
+                xmlDoc.LoadXml(part.Uri.AbsolutePath);
+
+                SignedXml signedXml = new(xmlDoc)
+                {
+                    SigningKey = rsaKey,
+                };
+
+                signedXml.Signature.Id = "idPackageSignature";
+                signedXml.SignedInfo.CanonicalizationMethod = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315";
+                signedXml.SignedInfo.SignatureMethod = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
+
+                XmlDsigEnvelopedSignatureTransform env = new();
+
+                Reference packageReference = new()
+                {
+                    Type = "http://www.w3.org/2000/09/xmldsig#Object",
+                    Uri = "#idPackageObject"
+                };
+                packageReference.AddTransform(env);
+                packageReference.DigestMethod = "http://www.w3.org/2000/09/xmldsig#sha1";
+
+                Reference reference = new()
+                {
+                    Type = "http://www.w3.org/2000/09/xmldsig#Object",
+                    Uri = "#idOfficeObject"
+                };
+                reference.AddTransform(env);
+                reference.DigestMethod = "http://www.w3.org/2000/09/xmldsig#sha1";
+
+                Reference signedPropertiesReference = new()
+                {
+                    Type = "http://uri.etsi.org/01903#SignedProperties",
+                    Uri = "#idSignedProperties"
+                };
+                signedPropertiesReference.AddTransform(env);
+                signedPropertiesReference.DigestMethod = "http://www.w3.org/2000/09/xmldsig#sha1";
+
+                signedXml.AddReference(packageReference);
+                signedXml.AddReference(reference);
+                signedXml.AddReference(signedPropertiesReference);
+
+                DataObject obj = new DataObject();
+
+                signedXml.ComputeSignature();
+
+                SaveAndCleanup(pck);
+            }
+        }
+
         [TestMethod]
         public void SignAsExcelDoes()
         {
@@ -110,13 +184,13 @@ namespace EPPlusTest
 
            // RSACryptoServiceProvider rsaKey = new(cspParams);
 
-
             RSACryptoServiceProvider rsaKey = new();
 
             XmlDocument xmlDoc = new()
             {
                 PreserveWhitespace = true,
             };
+
             xmlDoc.Load("C:\\epplusTest\\Workbooks\\sig1TestFile.xml");
 
             SignedXml signedXml = new(xmlDoc)
@@ -154,7 +228,7 @@ namespace EPPlusTest
 
             //Breaking out idOffice part of file to new file for later verification.
             var aString = idElement.OuterXml;
-            File.WriteAllText("C:\\epplusTest\\Workbooks\\idOfficeSeparateNew.xml", aString, System.Text.Encoding.UTF8);
+            File.WriteAllText("C:\\epplusTest\\Workbooks\\idOfficeSeparateNew.xml", aString, Encoding.UTF8);
 
             signedXml.AddReference(reference);
 
@@ -195,14 +269,14 @@ namespace EPPlusTest
         public void VerifyTheory()
         {
             string pObject = "<Object Id=\"idOfficeObject\" xmlns=\"http://www.w3.org/2000/09/xmldsig#\"><SignatureProperties><SignatureProperty Id=\"idOfficeV1Details\" Target=\"#idPackageSignature\"><SignatureInfoV1 xmlns=\"http://schemas.microsoft.com/office/2006/digsig\"><SetupID></SetupID><SignatureText></SignatureText><SignatureImage /><SignatureComments>Forty-two.</SignatureComments><WindowsVersion>10.0</WindowsVersion><OfficeVersion>16.0.17531/26</OfficeVersion><ApplicationVersion>16.0.17531</ApplicationVersion><Monitors>3</Monitors><HorizontalResolution>2560</HorizontalResolution><VerticalResolution>1440</VerticalResolution><ColorDepth>32</ColorDepth><SignatureProviderId>{00000000-0000-0000-0000-000000000000}</SignatureProviderId><SignatureProviderUrl></SignatureProviderUrl><SignatureProviderDetails>9</SignatureProviderDetails><SignatureType>1</SignatureType></SignatureInfoV1></SignatureProperty></SignatureProperties></Object>";
-            File.WriteAllText("C:\\epplusTest\\Workbooks\\pObjectTest.xml", pObject, System.Text.Encoding.UTF8);
-            var test = HashAndEncodeBytes(System.Text.Encoding.UTF8.GetBytes(pObject));
+            File.WriteAllText("C:\\epplusTest\\Workbooks\\pObjectTest.xml", pObject, Encoding.UTF8);
+            var test = HashAndEncodeBytes(Encoding.UTF8.GetBytes(pObject));
 
             var readData = File.ReadAllBytes("C:\\epplusTest\\Workbooks\\idOfficeClean.xml");
             var res = HashAndEncodeBytes(readData);
 
             var officeObj = "<Object Id=\"idOfficeObject\"><SignatureProperties><SignatureProperty Id=\"idOfficeV1Details\" Target=\"#idPackageSignature\"><SignatureInfoV1 xmlns=\"http://schemas.microsoft.com/office/2006/digsig\"><SetupID></SetupID><SignatureText></SignatureText><SignatureImage/><SignatureComments>Forty-two.</SignatureComments><WindowsVersion>10.0</WindowsVersion><OfficeVersion>16.0.17531/26</OfficeVersion><ApplicationVersion>16.0.17531</ApplicationVersion><Monitors>3</Monitors><HorizontalResolution>2560</HorizontalResolution><VerticalResolution>1440</VerticalResolution><ColorDepth>32</ColorDepth><SignatureProviderId>{00000000-0000-0000-0000-000000000000}</SignatureProviderId><SignatureProviderUrl></SignatureProviderUrl><SignatureProviderDetails>9</SignatureProviderDetails><SignatureType>1</SignatureType></SignatureInfoV1></SignatureProperty></SignatureProperties></Object><Object><xd:QualifyingProperties xmlns:xd=\"http://uri.etsi.org/01903/v1.3.2#\" Target=\"#idPackageSignature\"><xd:SignedProperties Id=\"idSignedProperties\"><xd:SignedSignatureProperties><xd:SigningTime>2024-05-27T12:07:02Z</xd:SigningTime><xd:SigningCertificate><xd:Cert><xd:CertDigest><DigestMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\"/><DigestValue>w9iTMIvTXcdRc9G38Pp1Njb/HPE=</DigestValue></xd:CertDigest><xd:IssuerSerial><X509IssuerName>CN=OssianEdström</X509IssuerName><X509SerialNumber>38225183535545048482234589307877617536</X509SerialNumber></xd:IssuerSerial></xd:Cert></xd:SigningCertificate><xd:SignaturePolicyIdentifier><xd:SignaturePolicyImplied/></xd:SignaturePolicyIdentifier></xd:SignedSignatureProperties><xd:SignedDataObjectProperties><xd:CommitmentTypeIndication><xd:CommitmentTypeId><xd:Identifier>http://uri.etsi.org/01903/v1.2.2#ProofOfOrigin</xd:Identifier><xd:Description>Created and approved this document</xd:Description></xd:CommitmentTypeId><xd:AllSignedDataObjects/><xd:CommitmentTypeQualifiers><xd:CommitmentTypeQualifier>Forty-two.</xd:CommitmentTypeQualifier></xd:CommitmentTypeQualifiers></xd:CommitmentTypeIndication></xd:SignedDataObjectProperties></xd:SignedProperties></xd:QualifyingProperties></Object>";
-            byte[] byteTest = System.Text.Encoding.Default.GetBytes(officeObj);
+            byte[] byteTest = Encoding.Default.GetBytes(officeObj);
 
             var readDataOffice = File.ReadAllBytes("C:\\epplusTest\\Workbooks\\packageObject.xml");
             var officeObject = File.ReadAllBytes("C:\\epplusTest\\Workbooks\\idOfficeObject.xml");
@@ -212,12 +286,11 @@ namespace EPPlusTest
             var officeObjectStuff = HashAndEncodeBytes(officeObject);
 
             Assert.AreEqual("Dwx/mtIT+lffP980qEOPVRJX41k=", officeObjectStuff);
-
             Assert.AreEqual("kxA0qm2FwPZvNmtI22ItXRQHlVs=", res);
 
             byte[] data = Convert.FromBase64String("kxA0qm2FwPZvNmtI22ItXRQHlVs=");
 
-            string decodedString = System.Text.Encoding.UTF8.GetString(data);
+            string decodedString = Encoding.UTF8.GetString(data);
         }
 
 

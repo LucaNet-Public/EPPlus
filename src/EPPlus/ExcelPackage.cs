@@ -221,6 +221,9 @@ namespace OfficeOpenXml
         internal const string schemaRichData2 = "http://schemas.microsoft.com/office/spreadsheetml/2017/richdata2";
         internal const string schemaDynamicArrays = "http://schemas.microsoft.com/office/spreadsheetml/2017/dynamicarray";
 
+        internal const string schemaRelationshipTransform = "http://schemas.openxmlformats.org/package/2006/RelationshipTransform";
+        internal const string schemaDigitalSignature = "http://schemas.openxmlformats.org/package/2006/digital-signature";
+
         //Package reference
         private Packaging.ZipPackage _zipPackage;
         internal ExcelWorkbook _workbook;

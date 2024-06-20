@@ -77,49 +77,51 @@ namespace OfficeOpenXml.DigitalSignatures
         string GetPackageObject()
         {
             StringBuilder sb = new StringBuilder();
+            var shaAlgorithm = "http://www.w3.org/2000/09/xmldsig#sha1";
+            var transformAlgorithm = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315";
 
             sb.Append("<Object Id=\"idOfficeObject\">");
             sb.Append("<Manifest>");
             sb.Append("<Reference URI=\"/_rels/.rels?ContentType=application/vnd.openxmlformats-package.relationships+xml\">");
             sb.Append("<Transforms>");
-            sb.Append("<Transform Algorithm=\"http://schemas.openxmlformats.org/package/2006/RelationshipTransform\">");
-            sb.Append("<mdssi:RelationshipReference xmlns:mdssi=\"http://schemas.openxmlformats.org/package/2006/digital-signature\" SourceId=\"rId1\"/>");
+            sb.Append($"<Transform Algorithm=\"{ExcelPackage.schemaRelationshipTransform}\">");
+            sb.Append($"<mdssi:RelationshipReference xmlns:mdssi=\"{ExcelPackage.schemaDigitalSignature}\" SourceId=\"rId1\"/>");
             sb.Append("</Transform>");
-            sb.Append("<Transform Algorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\"/>");
+            sb.Append($"<Transform Algorithm=\"{transformAlgorithm}\"/>");
             sb.Append("</Transforms>");
-            sb.Append("<DigestMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\"/>");
+            sb.Append($"<DigestMethod Algorithm=\"{shaAlgorithm}\"/>");
             sb.Append("<DigestValue>+nAd0bim5u961Z6hkrztwiSj8HA=</DigestValue>");
             sb.Append("</Reference>");
             sb.Append("<Reference URI=\"/xl/_rels/workbook.xml.rels?ContentType=application/vnd.openxmlformats-package.relationships+xml\">");
             sb.Append("<Transforms>");
-            sb.Append("<Transform Algorithm=\"http://schemas.openxmlformats.org/package/2006/RelationshipTransform\">");
-            sb.Append("<mdssi:RelationshipReference xmlns:mdssi=\"http://schemas.openxmlformats.org/package/2006/digital-signature\" SourceId=\"rId2\"/>");
-            sb.Append("<mdssi:RelationshipReference xmlns:mdssi=\"http://schemas.openxmlformats.org/package/2006/digital-signature\" SourceId=\"rId1\"/>");
-            sb.Append("<mdssi:RelationshipReference xmlns:mdssi=\"http://schemas.openxmlformats.org/package/2006/digital-signature\" SourceId=\"rId3\"/>");
+            sb.Append($"<Transform Algorithm=\"{ExcelPackage.schemaRelationshipTransform}\">");
+            sb.Append($"<mdssi:RelationshipReference xmlns:mdssi=\"{ExcelPackage.schemaDigitalSignature}\" SourceId=\"rId2\"/>");
+            sb.Append($"<mdssi:RelationshipReference xmlns:mdssi=\"{ExcelPackage.schemaDigitalSignature}\" SourceId=\"rId1\"/>");
+            sb.Append($"<mdssi:RelationshipReference xmlns:mdssi=\"{ExcelPackage.schemaDigitalSignature}\" SourceId=\"rId3\"/>");
             sb.Append("</Transform>");
-            sb.Append("<Transform Algorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\"/>");
+            sb.Append($"<Transform Algorithm=\"{transformAlgorithm}\"/>");
             sb.Append("</Transforms>");
-            sb.Append("<DigestMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\"/>");
+            sb.Append($"<DigestMethod Algorithm=\"{shaAlgorithm}\"/>");
             sb.Append("<DigestValue>9avqBD/nBx+S4OXeMoQGXb6Ex+I=</DigestValue>");
             sb.Append("</Reference>");
 
             sb.Append("<Reference URI=\"/xl/styles.xml?ContentType=application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\">");
-            sb.Append("<DigestMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\"/>");
+            sb.Append($"<DigestMethod Algorithm=\"{shaAlgorithm}\"/>");
             sb.Append("<DigestValue>R3jSMFWoLJ87ma2wdBoixK+0JNU=</DigestValue>");
             sb.Append("</Reference>");
 
             sb.Append("<Reference URI=\"/xl/theme/theme1.xml?ContentType=application/vnd.openxmlformats-officedocument.theme+xml\">");
-            sb.Append("<DigestMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\"/>");
+            sb.Append($"<DigestMethod Algorithm=\"{shaAlgorithm}\"/>");
             sb.Append("<DigestValue>/ORquKgdTLXGvZMWJ4gf11/OKGo=</DigestValue>");
             sb.Append("</Reference>");
 
             sb.Append("<Reference URI=\"/xl/workbook.xml?ContentType=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\">");
-            sb.Append("<DigestMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\"/>");
+            sb.Append($"<DigestMethod Algorithm=\"{shaAlgorithm}\"/>");
             sb.Append("<DigestValue>51TgNdwVubJZT8fUA/pVPTsIaQI=</DigestValue>");
             sb.Append("</Reference>");
 
             sb.Append("<Reference URI=\"/xl/worksheets/sheet1.xml?ContentType=application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\">");
-            sb.Append("<DigestMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\"/>");
+            sb.Append($"<DigestMethod Algorithm=\"{shaAlgorithm}\"/>");
             sb.Append("<DigestValue>kmvOJh6NwC8/DzXOVHP84iPGQys=</DigestValue>");
             sb.Append("</Reference>");
 
@@ -127,7 +129,7 @@ namespace OfficeOpenXml.DigitalSignatures
 
             sb.Append("<SignatureProperties>");
             sb.Append("<SignatureProperty Id=\"idSignatureTime\" Target=\"#idPackageSignature\">");
-            sb.Append("<mdssi:SignatureTime xmlns:mdssi=\"http://schemas.openxmlformats.org/package/2006/digital-signature\">");
+            sb.Append($"<mdssi:SignatureTime xmlns:mdssi=\"{ExcelPackage.schemaDigitalSignature}\">");
             sb.Append("<mdssi:Format>YYYY-MM-DDThh:mm:ssTZD</mdssi:Format>");
             sb.Append("<mdssi:Value>2024-05-27T12:07:02Z</mdssi:Value>");
             sb.Append("</mdssi:SignatureTime>");
@@ -218,29 +220,28 @@ namespace OfficeOpenXml.DigitalSignatures
 
         internal void Save()
         {
-            string parentElement = "<Signature xmlns=\"http://www.w3.org/2000/09/xmldsig#\" Id=\"idPackageSignature\">";
-            string endElement = "</Signature>";
+            //string parentElement = "<Signature xmlns=\"http://www.w3.org/2000/09/xmldsig#\" Id=\"idPackageSignature\">";
+            //string endElement = "</Signature>";
 
+            //var keyinfo = GetKeyInfo();
+            //var xmlIdSignedProperties = GetQualifyingPropertiesXml();
+            //var officeObject = GetOfficeObject();
+            //var packageObject = GetPackageObject();
 
+            //var joinedString = string.Concat(parentElement, keyinfo, packageObject, officeObject, xmlIdSignedProperties, endElement);
 
-            var keyinfo = GetKeyInfo();
-            var xmlIdSignedProperties = GetQualifyingPropertiesXml();
-            var officeObject = GetOfficeObject();
-            var packageObject = GetPackageObject();
+            //byte[] bytes = Encoding.UTF8.GetBytes(joinedString);
 
-            var joinedString = string.Concat(parentElement, keyinfo, packageObject, officeObject, xmlIdSignedProperties, endElement);
+            //_part.GetStream(FileMode.Create).Write(bytes, 0, bytes.Length);
 
+            //CspParameters cspParams = new()
+            //{
+            //    KeyContainerName = "XML_DSIG_RSA_KEY",
+            //};
 
-            byte[] bytes = Encoding.UTF8.GetBytes(joinedString);
+            //RSACryptoServiceProvider rsaKey = new(cspParams);
 
-            _part.GetStream(FileMode.Create).Write(bytes, 0, bytes.Length);
-
-            CspParameters cspParams = new()
-            {
-                KeyContainerName = "XML_DSIG_RSA_KEY",
-            };
-
-            RSACryptoServiceProvider rsaKey = new(cspParams);
+            RSACryptoServiceProvider rsaKey = new();
 
             XmlDocument xmlDoc = new()
             {
@@ -250,7 +251,7 @@ namespace OfficeOpenXml.DigitalSignatures
 
             SignedXml signedXml = new(xmlDoc)
             {
-                SigningKey = rsaKey
+                SigningKey = rsaKey,
             };
 
             Reference reference = new()
@@ -258,6 +259,10 @@ namespace OfficeOpenXml.DigitalSignatures
                 Type = "http://www.w3.org/2000/09/xmldsig#Object",
                 Uri = "#idOfficeObject"
             };
+
+            signedXml.Signature.Id = "idPackageSignature";
+            signedXml.SignedInfo.CanonicalizationMethod = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315";
+            signedXml.SignedInfo.SignatureMethod = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
 
             XmlDsigEnvelopedSignatureTransform env = new();
             reference.AddTransform(env);
