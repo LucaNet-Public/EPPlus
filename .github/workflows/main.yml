@@ -8,7 +8,8 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: arc-scale-set
+    
     env:
       DOTNET_INSTALL_DIR: "~/dotnet/"
 
